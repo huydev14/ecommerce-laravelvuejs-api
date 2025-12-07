@@ -23,8 +23,8 @@ class UpdateBrandRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', Rule::unique('brands', 'name')->ignore($this->brand->id)],
-            'description' => 'nullable|string'
+            'name' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('brands', 'name')->ignore($this->brand->id)],
+            'description' => 'sometimes|nullable|string'
         ];
     }
 }
