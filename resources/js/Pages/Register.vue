@@ -101,7 +101,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import axios from '../bootstrap'
 
 const router = useRouter()
 
@@ -135,7 +135,7 @@ const handleSubmit = async () => {
   try {
     const { data } = await axios.post('/api/register', form.value)
 
-    const token = data.token || data.access_token
+    const token = data.access_token
     if (!token) {
       throw new Error('No token returned from API')
     }
@@ -145,7 +145,10 @@ const handleSubmit = async () => {
       localStorage.setItem('user', JSON.stringify(data.user))
     }
 
-    router.push({ name: 'dashboard' })
+    // Cập nhật axios header
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+    router.push({ name: 'home' })
   } catch (error) {
     if (error.response) {
       const { status, data } = error.response
