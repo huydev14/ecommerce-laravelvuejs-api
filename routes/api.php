@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Authentication routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -16,10 +17,28 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Public routes
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
+Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/brands/{brand}', [BrandController::class, 'show']);
 
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('brands', BrandController::class);
-Route::apiResource('products', ProductController::class);
+// Protected routes - admin only
+Route::middleware('jwt.auth')->group(function () {
+    // Products
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+
+    // Categories
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{category}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+
+    // Brands
+    Route::post('/brands', [BrandController::class, 'store']);
+    Route::put('/brands/{brand}', [BrandController::class, 'update']);
+    Route::delete('/brands/{brand}', [BrandController::class, 'destroy']);
+});
