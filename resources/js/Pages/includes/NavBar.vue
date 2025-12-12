@@ -21,21 +21,76 @@
 
         <!-- MEGA DROPDOWN -->
         <div
-          class="absolute left-0 top-full mt-0 w-[600px] bg-white dark:bg-gray-800 shadow-xl rounded-xl p-6 
-                 grid grid-cols-3 gap-6 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-                 transition duration-200 ease-in-out
-                 group-hover:translate-y-0 translate-y-2">
+            class="absolute left-0 top-full pt-3 w-[600px] z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                 transition duration-200 ease-in-out">
+          <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-6 grid grid-cols-3 gap-6">
           
-          <div v-for="group in categoryGroups" :key="group.title">
-            <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-3">{{ group.title }}</h4>
+          <template v-if="categories.loading.value">
+            <div class="col-span-3 text-center py-4 text-gray-500 dark:text-gray-400">
+              Đang tải danh mục...
+            </div>
+          </template>
 
-            <router-link
-              v-for="item in group.items"
-              :key="item.slug"
-              :to="'/category/' + item.slug"
-              class="block py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:pl-1 transition">
-              {{ item.name }}
-            </router-link>
+          <template v-else-if="categories.error.value">
+            <div class="col-span-3 text-center py-4 text-red-500">
+              {{ categories.error.value }}
+            </div>
+          </template>
+
+          <template v-else>
+            <div v-for="(column, index) in categories.columns.value" :key="index">
+              <router-link
+                v-for="category in column"
+                :key="category.id"
+                :to="'/category/' + category.slug"
+                class="block py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:pl-1 transition">
+                {{ category.name }}
+              </router-link>
+            </div>
+          </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- BRANDS DROPDOWN -->
+      <div class="relative group">
+        <button
+          class="flex items-center text-gray-700 dark:text-gray-200 font-medium hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <BuildingStorefrontIcon
+            class="w-6 h-6 mr-1 text-gray-800 dark:text-gray-200 hover:text-blue-600 transition" />
+          Brands
+          <ChevronDownIcon class="w-4 h-4 ml-1 transition group-hover:rotate-180" />
+        </button>
+
+        <!-- MEGA DROPDOWN -->
+        <div
+          class="absolute left-0 top-full pt-3 w-[600px] z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                 transition duration-200 ease-in-out">
+          <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-6 grid grid-cols-3 gap-6">
+          
+          <template v-if="brands.loading.value">
+            <div class="col-span-3 text-center py-4 text-gray-500 dark:text-gray-400">
+              Đang tải brands...
+            </div>
+          </template>
+
+          <template v-else-if="brands.error.value">
+            <div class="col-span-3 text-center py-4 text-red-500">
+              {{ brands.error.value }}
+            </div>
+          </template>
+
+          <template v-else>
+            <div v-for="(column, index) in brands.columns.value" :key="index">
+              <router-link
+                v-for="brand in column"
+                :key="brand.id"
+                :to="'/brand/' + brand.slug"
+                class="block py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:pl-1 transition">
+                {{ brand.name }}
+              </router-link>
+            </div>
+          </template>
           </div>
         </div>
       </div>
@@ -135,56 +190,92 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Bars2Icon,
+  BuildingStorefrontIcon,
   ShoppingCartIcon,
   MagnifyingGlassIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
 } from '@heroicons/vue/24/outline'
+import axios from '../../bootstrap'
 
 const search = ref("")
-const isLoggedIn = ref(true)
+const token = ref(localStorage.getItem("token"))
+const isLoggedIn = computed(() => !!token.value)
+
 const userAvatar = ref("https://i.pravatar.cc/50?u=tech")
 
 const cartCount = ref(3)
 
 const showUserMenu = ref(false)
-const showCat = ref(false)
 
 const toggleUser = () => showUserMenu.value = !showUserMenu.value
 
-const logout = () => {
-  localStorage.removeItem("token")
-  isLoggedIn.value = false
-  showUserMenu.value = false
+const categories = useApiList("/api/categories")
+
+const brands = useApiList("/api/brands")
+
+/**
+ * Load Categories/Brands from api
+ * 
+ * @param url 
+ */
+function useApiList(url) {
+  const list = ref([])
+  const loading = ref(false)
+  const error = ref("")
+
+  const columns = computed(() => {
+    const perColumn = Math.ceil(list.value.length / 3) || 1
+    return [
+      list.value.slice(0, perColumn),
+      list.value.slice(perColumn, perColumn * 2),
+      list.value.slice(perColumn * 2),
+    ]
+  })
+
+  const load = async (axios) => {
+    try {
+      loading.value = true
+      error.value = ""
+      console.log('Loading from:', url)
+      const res = await axios.get(url)
+      console.log('Response:', res.data)
+      list.value = res.data?.data ?? res.data ?? []
+      console.log('List after load:', list.value)
+    } catch (e) {
+      error.value = "Không thể tải dữ liệu"
+      console.error('Error loading:', e)
+    } finally {
+      loading.value = false
+      console.log('Loading finished, loading state:', loading.value)
+    }
+  }
+  return { list, loading, error, columns, load }
 }
 
-// Mega menu category groups
-const categoryGroups = ref([
-  {
-    title: "Laptops",
-    items: [
-      { name: "Gaming", slug: "laptop-gaming" },
-      { name: "Ultrabook", slug: "ultrabook" },
-      { name: "Business", slug: "business-laptop" }
-    ]
-  },
-  {
-    title: "Phones",
-    items: [
-      { name: "iPhone", slug: "iphone" },
-      { name: "Samsung", slug: "samsung" },
-      { name: "Xiaomi", slug: "xiaomi" }
-    ]
-  },
-  {
-    title: "Accessories",
-    items: [
-      { name: "Keyboards", slug: "keyboard" },
-      { name: "Headsets", slug: "headset" },
-      { name: "Monitors", slug: "monitor" }
-    ]
+const logout = async () => {
+  try {
+    await axios.post('/api/logout')
+  } catch (error) {
+    console.error('Error logging out:', error)
+  } finally {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    isLoggedIn.value = false
+    showUserMenu.value = false
   }
-])
+}
+
+// Watch for token changes in localStorage (e.g., from other tabs)
+watch(() => localStorage.getItem("token"), (newToken) => {
+  isLoggedIn.value = !!newToken
+})
+
+onMounted(() => {
+  categories.load(axios)
+  brands.load(axios)
+})
 </script>
