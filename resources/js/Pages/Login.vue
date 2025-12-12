@@ -1,78 +1,33 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="w-full max-w-md bg-white rounded-lg shadow p-6">
-      <h1 class="text-2xl font-semibold text-center mb-6">Login</h1>
-
-      <div v-if="generalError" class="mb-4 text-red-600 text-sm">
-        {{ generalError }}
-      </div>
-
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-medium mb-1" for="email">Email</label>
-          <input
-            id="email"
-            v-model="form.email"
-            type="email"
-            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-400"
-            autocomplete="email"
-            required
-          />
-          <p v-if="errors.email" class="mt-1 text-xs text-red-600">
-            {{ errors.email }}
-          </p>
-        </div>
-
-        <!-- Password -->
-        <div>
-          <label class="block text-sm font-medium mb-1" for="password">Password</label>
-          <input
-            id="password"
-            v-model="form.password"
-            type="password"
-            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-400"
-            autocomplete="current-password"
-            required
-          />
-          <p v-if="errors.password" class="mt-1 text-xs text-red-600">
-            {{ errors.password }}
-          </p>
-        </div>
-
-        <!-- Remember + link -->
-        <div class="flex items-center justify-between">
-          <label class="flex items-center text-sm">
-            <input
-              type="checkbox"
-              v-model="form.remember"
-              class="mr-2"
-            />
-            Remember me
-          </label>
-
-          <RouterLink
-            :to="{ name: 'register' }"
-            class="text-sm text-blue-600 hover:underline"
-          >
-            Create an account
-          </RouterLink>
-        </div>
-
-        <!-- Button -->
-        <button
-          type="submit"
-          :disabled="loading"
-          class="w-full flex items-center justify-center border border-transparent rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
-        >
-          <span v-if="!loading">Login</span>
-          <span v-else>Logging in...</span>
-        </button>
-      </form>
-    </div>
-  </div>
-</template>
-
+  <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+          Sign in to your account
+  </h1>
+  <form class="space-y-4 md:space-y-6" @submit.prevent="handleSubmit" novalidate>
+                  <div>
+                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
+                      <input type="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required="">
+                  </div>
+                  <div>
+                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                      <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="">
+                  </div>
+                  <div class="flex items-center justify-between">
+                      <div class="flex items-start">
+                          <div class="flex items-center h-5">
+                            <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800" required="">
+                          </div>
+                          <div class="ml-3 text-sm">
+                            <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
+                          </div>
+                      </div>
+                      <a href="#" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Forgot password?</a>
+                  </div>
+                  <button type="submit" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
+                  <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                      Don’t have an account yet? <router-link :to="{name : 'register'}" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</router-link>
+                  </p>
+  </form>
+</template>       
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -122,7 +77,7 @@ const handleSubmit = async () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
     // Chuyển sang trang home
-    router.push({ name: 'home' })
+    router.push({ name: 'dashboard' })
   } catch (error) {
     if (error.response) {
       const { status, data } = error.response
