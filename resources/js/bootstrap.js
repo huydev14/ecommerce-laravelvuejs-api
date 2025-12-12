@@ -29,7 +29,7 @@ axios.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
-            window.location.href = "/login";
+            delete axios.defaults.headers.common['Authorization'];
         }
         return Promise.reject(error);
     }
